@@ -1,6 +1,6 @@
 import numpy as np
 import antropy as ant
-from Modal_Decomposition.EMD import EFD
+from Modal_Decomposition.EFD import EFD
 from PyEMD import CEEMDAN
 
 class CEEFD:

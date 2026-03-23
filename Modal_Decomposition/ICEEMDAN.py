@@ -1,9 +1,9 @@
 import numpy as np
-from .EMD import EFD
+from .EMD import emd
 from . import is_increasing
 
 
-def iceemdan(S, Ne=300, epsilon_0=None, max_imf=None, verbose: bool=False):
+def iceemdan(S, T=None, Ne=300, epsilon_0=None, max_imf=None, verbose: bool=False, spline_kind: str = "cubic", nbsym: int = 2, emd_max_imf=-1, fs=None):
     """
     :param verbose: is print formation
     :param S: Signal (1-dim)
@@ -16,16 +16,18 @@ def iceemdan(S, Ne=300, epsilon_0=None, max_imf=None, verbose: bool=False):
     if not isinstance(S, np.ndarray):
         S = np.array(S)
 
-    T = len(S)
+    T_len = len(S)
+    if T is None:
+        T = np.arange(0, T_len, 1)
 
-    white_noise = np.random.randn(Ne, T)  # generate Ne white nose
+    white_noise = np.random.randn(Ne, T_len)  # generate Ne white nose
 
     if verbose:
         print(f"decomposition {Ne} of white noise ...")
     white_imfs_list = []
 
     for i in range(Ne):
-        imfs, _ = EFD(white_noise[i, :])
+        imfs, _ = emd(white_noise[i, :], T, spline_kind=spline_kind, nbsym=nbsym, max_imf=emd_max_imf)
         white_imfs_list.append(imfs)
 
     max_k = max(len(imfs) for imfs in white_imfs_list)
@@ -49,7 +51,7 @@ def iceemdan(S, Ne=300, epsilon_0=None, max_imf=None, verbose: bool=False):
     imfs_list = []
 
     if max_imf is None:
-        max_imf = int(np.log2(T))
+        max_imf = int(np.log2(T_len))
 
     for k in range(max_imf):
         if verbose:
@@ -63,7 +65,7 @@ def iceemdan(S, Ne=300, epsilon_0=None, max_imf=None, verbose: bool=False):
             else:
                 epsilon_k = epsilon_0 * np.sqrt(Ne)
 
-        imf_candidates = np.zeros((Ne, T))
+        imf_candidates = np.zeros((Ne, T_len))
 
         valid_count = 0
         for i in range(Ne):
@@ -76,7 +78,7 @@ def iceemdan(S, Ne=300, epsilon_0=None, max_imf=None, verbose: bool=False):
 
             noisy_signal = residue + epsilon_k * Ek_wi
 
-            imfs_noisy, _ = EFD(noisy_signal)
+            imfs_noisy, _ = emd(noisy_signal, T, spline_kind=spline_kind, nbsym=nbsym, max_imf=emd_max_imf)
 
             if len(imfs_noisy) > 0:
                 imf_candidates[valid_count] = imfs_noisy[0]

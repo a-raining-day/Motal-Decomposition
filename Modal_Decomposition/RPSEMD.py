@@ -1,9 +1,9 @@
 import numpy as np
-from .EMD import EFD
+from .EMD import emd
 from . import is_increasing
 from COLOR.colorful_print import printc
 
-def rpsemd(S, T=None, f=None, M=4, max_imf=None, fs=1.0):
+def rpsemd(S, T=None, f=None, M=4, max_imf=None, fs=1.0, spline_kind: str = "cubic", nbsym: int = 2, emd_max_imf=-1):
     """
     :param fs:
     :param T: time axis
@@ -43,7 +43,7 @@ def rpsemd(S, T=None, f=None, M=4, max_imf=None, fs=1.0):
             Am_t = np.sin(2 * np.pi * T * f + phi[m])
             Xm_t = S + Am_t
 
-            _IMFs, _Res = EFD(Xm_t, T)
+            _IMFs, _Res = emd(Xm_t, T, spline_kind=spline_kind, nbsym=nbsym, max_imf=emd_max_imf)
             orders.append(_IMFs[0, :])
 
         IMF = np.average(orders, axis=0)

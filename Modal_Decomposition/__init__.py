@@ -1,5 +1,5 @@
 """
-提供通用接口:
+Modal Decomposition:
     LMD、CEEMDAN、EFD、CEEFD、VMD、EEMD、FMD、EWT、SSA、RPSEMD、CEEMD、MEMD、ICEEMDAN、EMD
 """
 import numpy as np
@@ -36,19 +36,44 @@ Origin_EEMD = Origin_EEMD
 Origin_SSA = SSA
 Origin_SVMD = SVMD
 
+
+class Class:
+    CEEFD = Origin_CEEFD
+    EEMD = Origin_EEMD
+    SSA = Origin_SSA
+    SVMD = Origin_SVMD
+
+
+class Function:
+    EFD = EFD
+    CEEFD = ceefd_real_cls.ceefd
+    CEEMDAN = ceefd_real_cls.ceemdan
+    VMD = vmd
+    EEMD = eemd
+    FMD = fmd
+    EWT = ewt
+    SSA = ssa_cls.decompose
+    RPSEMD = rpsemd
+    CEEMD = ceemd
+    MEMD = memd
+    ICEEMDAN = iceemdan
+    LMD = lmd
+    SVMD = svmd_cls.extract_mode
+    EMD = emd
+
 # function | default function for modal decomposition
-EFD = EFD
-CEEFD = ceefd_real_cls.ceefd
-CEEMDAN = ceefd_real_cls.ceemdan
-VMD = vmd
-EEMD = eemd
-FMD = fmd
-EWT = ewt
-SSA = ssa_cls.decompose
-RPSEMD = rpsemd
-CEEMD = ceemd
-MEMD = memd
-ICEEMDAN = iceemdan
-LMD = lmd
-SVMD = svmd_cls.extract_mode
-EMD = emd
+EFD = Function.EFD
+CEEFD = Function.CEEFD
+CEEMDAN = Function.CEEMDAN
+VMD = Function.VMD
+EEMD = Function.EEMD
+FMD = Function.FMD
+EWT = Function.EWT
+SSA = Function.SSA
+RPSEMD = Function.RPSEMD
+CEEMD = Function.CEEMD
+MEMD = Function.MEMD
+ICEEMDAN = Function.ICEEMDAN
+LMD = Function.LMD
+SVMD = Function.SVMD
+EMD = Function.EMD

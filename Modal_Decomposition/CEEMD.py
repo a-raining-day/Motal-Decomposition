@@ -1,8 +1,8 @@
 import numpy as np
-from .EMD import EFD
+from .EMD import emd
 from . import is_increasing
 
-def ceemd(S, T=None, fs=None, mean=0, std_dev=1, beta=1):
+def ceemd(S, T=None, fs=None, mean=0, std_dev=1, beta=1, spline_kind: str = "cubic", nbsym: int = 2, max_imf=-1):
 
     N = len(S)
 
@@ -21,7 +21,7 @@ def ceemd(S, T=None, fs=None, mean=0, std_dev=1, beta=1):
     S = S + white_noise * beta
     IMFs = []
     while True:
-        _IMFs, _Res = EFD(S, T, fs)
+        _IMFs, _Res = emd(S=S, T=T, fs=fs, spline_kind=spline_kind, nbsym=nbsym, max_imf=max_imf)
 
         IMF = np.average(_IMFs, axis=0)
         IMFs.append(IMF)
