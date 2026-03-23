@@ -1,5 +1,5 @@
 import numpy as np
-from .EMD import EMD
+from .EMD import EFD
 from . import is_increasing
 
 
@@ -25,7 +25,7 @@ def iceemdan(S, Ne=300, epsilon_0=None, max_imf=None, verbose: bool=False):
     white_imfs_list = []
 
     for i in range(Ne):
-        imfs, _ = EMD(white_noise[i, :])
+        imfs, _ = EFD(white_noise[i, :])
         white_imfs_list.append(imfs)
 
     max_k = max(len(imfs) for imfs in white_imfs_list)
@@ -76,7 +76,7 @@ def iceemdan(S, Ne=300, epsilon_0=None, max_imf=None, verbose: bool=False):
 
             noisy_signal = residue + epsilon_k * Ek_wi
 
-            imfs_noisy, _ = EMD(noisy_signal)
+            imfs_noisy, _ = EFD(noisy_signal)
 
             if len(imfs_noisy) > 0:
                 imf_candidates[valid_count] = imfs_noisy[0]

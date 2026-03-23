@@ -1,5 +1,5 @@
 import numpy as np
-from .EMD import EMD
+from .EMD import EFD
 from . import is_increasing
 from COLOR.colorful_print import printc
 
@@ -43,7 +43,7 @@ def rpsemd(S, T=None, f=None, M=4, max_imf=None, fs=1.0):
             Am_t = np.sin(2 * np.pi * T * f + phi[m])
             Xm_t = S + Am_t
 
-            _IMFs, _Res = EMD(Xm_t, T)
+            _IMFs, _Res = EFD(Xm_t, T)
             orders.append(_IMFs[0, :])
 
         IMF = np.average(orders, axis=0)

@@ -1,10 +1,10 @@
 """
 提供通用接口:
-    LMD、CEEMDAN、EFD、CEEFD、VMD、EEMD、FMD、EWT、SSA、RPSEMD、CEEMD、MEMD、ICEEMDAN
+    LMD、CEEMDAN、EFD、CEEFD、VMD、EEMD、FMD、EWT、SSA、RPSEMD、CEEMD、MEMD、ICEEMDAN、EMD
 """
 import numpy as np
 
-from .EMD import EMD
+from .EFD import EFD
 from .CEEFD import CEEFD
 from .VMD import vmd
 from .EEMD import Origin_EEMD, eemd
@@ -17,6 +17,7 @@ from .MEMD import memd
 from .ICEEMDAN import iceemdan
 from .LMD import lmd
 from .SVMD import SVMD
+from .EMD import emd
 
 
 def is_increasing(S) -> bool:
@@ -36,7 +37,7 @@ Origin_SSA = SSA
 Origin_SVMD = SVMD
 
 # function | default function for modal decomposition
-EFD = EMD
+EFD = EFD
 CEEFD = ceefd_real_cls.ceefd
 CEEMDAN = ceefd_real_cls.ceemdan
 VMD = vmd
@@ -50,3 +51,4 @@ MEMD = memd
 ICEEMDAN = iceemdan
 LMD = lmd
 SVMD = svmd_cls.extract_mode
+EMD = emd

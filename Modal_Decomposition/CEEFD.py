@@ -1,6 +1,6 @@
 import numpy as np
 import antropy as ant
-from Modal_Decomposition.EMD import EMD
+from Modal_Decomposition.EMD import EFD
 from PyEMD import CEEMDAN
 
 class CEEFD:
@@ -88,7 +88,7 @@ class CEEFD:
             T_efd = np.arange(len(maxIMF))
         else:
             T_efd = T
-        IMF_, Res_ = EMD(maxIMF, T_efd)
+        IMF_, Res_ = EFD(maxIMF, T_efd)
 
         # get other_IMFs
         other_IMFs_list = [IMF for i, IMF in enumerate(IMFs) if i != max_entropy_mask]

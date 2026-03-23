@@ -1,5 +1,5 @@
 import numpy as np
-from .EMD import EMD
+from .EMD import EFD
 from . import is_increasing
 
 def ceemd(S, T=None, fs=None, mean=0, std_dev=1, beta=1):
@@ -21,7 +21,7 @@ def ceemd(S, T=None, fs=None, mean=0, std_dev=1, beta=1):
     S = S + white_noise * beta
     IMFs = []
     while True:
-        _IMFs, _Res = EMD(S, T, fs)
+        _IMFs, _Res = EFD(S, T, fs)
 
         IMF = np.average(_IMFs, axis=0)
         IMFs.append(IMF)
