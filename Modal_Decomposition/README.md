@@ -8,6 +8,10 @@ In order to integrate the modal decomposition method as comprehensive as possibl
 
 Hope my lib can help you.
 
+## Entrance
+
+All entrance of functions or class are stored in `Modal_Decomposition/__init__.py`
+
 ## Modal Decomposition
 
 | method   | description                                                                 |             use             |                                                                                                                                                                     resource(doi and link)                                                                                                                                                                      |
