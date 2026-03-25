@@ -1,6 +1,8 @@
 """
 Modal Decomposition:
     LMD、CEEMDAN、EFD、CEEFD、VMD、EEMD、FMD、EWT、SSA、RPSEMD、CEEMD、MEMD、ICEEMDAN、EMD
+
+GitHub url: https://github.com/a-raining-day/Modal-Decomposition
 """
 import numpy as np
 from typing import Literal

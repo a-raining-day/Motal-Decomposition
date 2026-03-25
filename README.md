@@ -72,3 +72,6 @@ All codes from :
 - Myself:
   - CEEMD, EFD, FMD, ICEEMDAN, LMD, MEMD, RPSEMD, SSA, SVMD
 
+## Url
+
+This lib's url is: https://github.com/a-raining-day/Modal-Decomposition
