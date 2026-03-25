@@ -1,8 +1,25 @@
-import numpy as np
-from scipy.signal import find_peaks
-from matplotlib import pyplot as plt
-from .COLOR.colorful_print import printc
+"""
+Python version:  (must)
+    3.10.11
 
+Lib and Version:  (if None write None)
+    numpy - 2.2.6
+	scipy - 1.15.3
+	matplotlib - 3.10.8
+
+Only accessed by:  (must)
+    Only __init__.py
+
+Modify:  (must)
+    2026.3.25
+
+Description: (if None write None)
+    Realize the EFD.
+    Optimize the use of scipy.signal
+"""
+
+import numpy as np
+from COLOR.colorful_print import printc
 
 def EFD(S, T=None, fs=None):
     """
@@ -10,6 +27,7 @@ def EFD(S, T=None, fs=None):
     :param T: Time axis (uniform spacing)
     :return: IMFs: np.ndarray (2-dim) | Res: np.ndarray (1-dim)
     """
+    from scipy.signal import find_peaks
 
     if not isinstance(S, np.ndarray):
         S = np.array(S)
@@ -74,64 +92,3 @@ def EFD(S, T=None, fs=None):
     IMFs: np.ndarray = np.array(IMFs)
 
     return IMFs, Res
-
-if __name__ == '__main__':
-    def verify_efd(S, T, IMFs):
-        """
-        验证 EFD 分解的正确性
-        """
-        import numpy as np
-        import matplotlib.pyplot as plt
-
-        # 1. 检查重构误差
-        reconstructed = np.sum(IMFs, axis=0)
-        error = np.max(np.abs(S - reconstructed))
-        print(f"最大重构误差: {error:.2e}")
-
-        # 2. 检查能量守恒
-        energy_original = np.sum(S ** 2)
-        # print(IMFs)
-        energy_imfs = np.sum([np.sum(imf ** 2) for imf in IMFs])
-        print(f"原始信号能量: {energy_original:.6f}")
-        print(f"IMF能量和: {energy_imfs:.6f}")
-        print(f"能量误差: {abs(energy_original - energy_imfs):.2e}")
-
-        # 3. 可视化
-        fig, axes = plt.subplots(len(IMFs) + 2, 1, figsize=(12, 2 * (len(IMFs) + 2)))
-
-        # 原始信号
-        axes[0].plot(T, S)
-        axes[0].set_title("原始信号")
-        axes[0].set_ylabel("幅值")
-
-        # IMFs
-        for i, imf in enumerate(IMFs):
-            axes[i + 1].plot(T, imf)
-            axes[i + 1].set_title(f"IMF {i + 1}")
-            axes[i + 1].set_ylabel("幅值")
-
-        # 重构信号
-        axes[-1].plot(T, reconstructed, 'r-', label='重构')
-        axes[-1].plot(T, S, 'b--', alpha=0.5, label='原始')
-        axes[-1].set_title("重构信号 vs 原始信号")
-        axes[-1].set_ylabel("幅值")
-        axes[-1].set_xlabel("时间")
-        axes[-1].legend()
-
-        plt.tight_layout()
-        plt.show()
-
-        return error < 1e-10
-
-    # 生成测试信号
-    import numpy as np
-
-    t = np.linspace(0, 1, 1000)  # 1000个点
-    f1, f2, f3 = 5, 20, 50
-    S = np.sin(2 * np.pi * f1 * t) + 0.5 * np.sin(2 * np.pi * f2 * t) + 0.2 * np.sin(2 * np.pi * f3 * t)
-
-    # 应用 EFD
-    IMFs = EFD(S, t)
-
-    # 验证
-    verify_efd(S, t, IMFs)

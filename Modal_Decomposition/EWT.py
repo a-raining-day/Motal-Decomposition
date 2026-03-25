@@ -1,4 +1,21 @@
-from ewtpy import EWT1D
+"""
+Python version:  (must)
+    3.10.11
+
+Lib and Version:  (if None write None)
+    ewtpy - 0.2
+	numpy - 2.2.6
+
+Only accessed by:  (must)
+    Only __init__.py
+
+Modify:  (must)
+    2026.3.25
+
+Description: (if None write None)
+    Realize the EWT
+"""
+
 from typing import Tuple, Union, Optional
 import numpy as np
 
@@ -15,7 +32,6 @@ def ewt \
     need_mfd: bool = False,
     need_boundaries: bool = False) -> Tuple[np.ndarray, np.ndarray] | Tuple[np.ndarray, np.ndarray, np.ndarray] | Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
-
     :param S: Signal
     :param N:
     :param log:
@@ -26,6 +42,7 @@ def ewt \
     :param sigmaFilter:
     :return: IMFs(N, len(S)) (2-dim)
     """
+    from ewtpy import EWT1D
 
     ewt, mfb, boundaries = EWT1D(S, N, log, detect, completion, reg, lengthFilter, sigmaFilter)
     ewt = ewt.T

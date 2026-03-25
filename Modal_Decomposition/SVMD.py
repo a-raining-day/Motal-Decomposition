@@ -1,6 +1,22 @@
+"""
+Python version:  (must)
+    3.10.11
+
+Lib and Version:  (if None write None)
+    numpy - 2.2.6
+	scipy - 1.15.3
+
+Only accessed by:  (must)
+    Only __init__.py
+
+Modify:  (must)
+    2026.3.25
+
+Description: (if None write None)
+    Realize the SVMD. Optimize the use of scipy lib.
+"""
+
 import numpy as np
-from scipy.optimize import minimize
-from scipy.signal import hilbert
 from typing import Tuple
 
 class SVMD:
@@ -11,6 +27,9 @@ class SVMD:
         self.modes = []
 
     def extract_mode(self, res):
+        from scipy.optimize import minimize
+        from scipy.signal import hilbert
+
         def cost(omega):
             hilbert_transform = hilbert(res * np.cos(omega * np.arange(len(res))))
 

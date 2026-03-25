@@ -1,3 +1,22 @@
+"""
+Python version:  (must)
+    3.10.11
+
+Lib and Version:  (if None write None)
+    numpy - 2.2.6
+	time - 1.39.2
+	tqdm - 4.67.3
+
+Only accessed by:  (must)
+    Only __init__.py
+
+Modify:  (must)
+    2026.3.25
+
+Description: (if None write None)
+    Realize the CEEMD.
+"""
+
 from time import sleep
 import numpy as np
 from .EMD import emd

@@ -1,0 +1,40 @@
+All structure template as follows:
+    the total description of the entrance or main of lib (for example: the description of the __init__.py):
+        Python version:  (must)
+            ***
+
+        Role:  (if None write None)
+            ***
+
+        Lib and Version:  (if None write None)
+            package - version
+            (colorama - 0.0.1)
+
+        Only accessed by:  (must)
+            All / ***(the specific file)
+
+        Modify:  (must)
+            2026.3.4
+            ...
+
+    the description of sub-lib (for example: the description of the color_define.py):
+        Python version: ***  (must)
+
+        Lib and Version:  (if None write None)
+            package - version
+            (colorama - 0.4.6)
+
+        Only accessed by:  (must)
+            __init__.py, colorful_print.py
+
+        Modify:  (must)
+            2026.3.4
+            ...
+
+    the description of function:
+        all parameters should be described clearly, and the parameter of **kwargs and *args should also be described clearly.
+        the clear formal parameters:
+            all parameters should be described clearly. you should describe it's type, input formation,etc.
+
+        the *args and **kwargs:
+            the constraints of the input of *args and **kwargs should be described clearly.

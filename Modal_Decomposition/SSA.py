@@ -1,6 +1,24 @@
+"""
+
+Python version:  (must)
+    3.10.11
+
+Lib and Version:  (if None write None)
+    numpy - 2.2.6
+	numba - 0.64.0
+
+Only accessed by:  (must)
+    Only __init__.py
+
+Modify:  (must)
+    2026.3.25
+
+Description: (if None write None)
+    Realize SSA, and optimize the use of numba and SSAfast(function).
+"""
+
 import numpy as np
-from numba import njit
-from typing import Tuple
+from typing import Tuple, Callable
 
 class SSA:
     def __init__(self, window_size=None):
@@ -74,20 +92,21 @@ class SSA:
         return self.components_, np.zeros((1, self.components_.shape[1]))
 
 
-@njit
-def SSAfast(series, L):
-    N = len(series)
-    K = N - L + 1
-
-    X = np.zeros((L, K))
-    for i in range(K):
-        X[:, i] = series[i:i + L]
-
-    # SVD decomposition
-    U, s, VT = np.linalg.svd(X, full_matrices=False)
-
-    return U, s, VT
-
-
-if __name__ == '__main__':
-    ...
+# def give_fast_SSA() -> Callable:
+#     from numba import njit
+#
+#     @njit
+#     def SSAfast(series, L):
+#         N = len(series)
+#         K = N - L + 1
+#
+#         X = np.zeros((L, K))
+#         for i in range(K):
+#             X[:, i] = series[i:i + L]
+#
+#         # SVD decomposition
+#         U, s, VT = np.linalg.svd(X, full_matrices=False)
+#
+#         return U, s, VT
+#
+#     return SSAfast

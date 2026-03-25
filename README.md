@@ -59,6 +59,8 @@ This lib's dependence are:
 
 *Other dependence please read "requirements.txt"*
 
+*Well, some libs should installed by yourself, don't use `pip install -r requirements.txt`, because `torch, torchvision` need installed on Official Web*
+
 ## Codes Resource
 
 All codes from :

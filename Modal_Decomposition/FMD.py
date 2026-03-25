@@ -1,9 +1,27 @@
+"""
+Python version:  (must)
+    3.10.11
+
+Lib and Version:  (if None write None)
+    scipy - 1.15.3
+	matplotlib - 3.10.8
+	numpy - 2.2.6
+
+Only accessed by:  (must)
+    Only __init__.py
+
+Modify:  (must)
+    2026.3.25
+
+Description: (if None write None)
+    Realize the FMD
+"""
+
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy.signal import firwin, lfilter, correlate, find_peaks
-import pandas as pd
 
 def initialize_filters(L, K):
+    from scipy.signal import firwin
+
     filters = []
     for k in range(1, K + 1):
        cutoff = 0.5 / k
@@ -12,6 +30,8 @@ def initialize_filters(L, K):
     return filters
 
 def estimate_period(signal):
+    from scipy.signal import correlate, find_peaks
+
     correlation = correlate(signal, signal, mode='full')
     correlation = correlation[len(correlation) // 2:]
     peaks, _ = find_peaks(correlation)
@@ -29,6 +49,7 @@ def fmd(S, n, L=100, max_iters=10):
     :param max_iters:
     :return:
     """
+    from scipy.signal import lfilter
 
     if not isinstance(S, np.ndarray):
         S = np.array(S)
@@ -45,22 +66,3 @@ def fmd(S, n, L=100, max_iters=10):
        if len(modes) >= n:
            break
     return modes[:n]
-
-
-if __name__ == '__main__':
-    signal_df = np.random.rand(1, 100).squeeze()
-    time = np.arange(0, signal_df.size, 1)
-    n = 5
-    modes = fmd(signal_df, n)
-    for i, mode in enumerate(modes):
-       print(f'Mode {i+1}: Max={np.max(mode)}, Min={np.min(mode)}')
-    plt.figure(figsize=(10, 8))
-    plt.subplot(len(modes) + 1, 1, 1)
-    plt.plot(time, signal_df)
-    plt.title('Original Signal')
-    for i, mode in enumerate(modes, start=1):
-       plt.subplot(len(modes) + 1, 1, i + 1)
-       plt.plot(time, mode)
-       plt.title(f'Mode {i}')
-    plt.tight_layout()
-    plt.show()

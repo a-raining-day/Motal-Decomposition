@@ -1,7 +1,24 @@
+"""
+Python version:  (must)
+    3.10.11
+
+Lib and Version:  (if None write None)
+    numpy - 2.2.6
+
+Only accessed by:  (must)
+    Only __init__.py
+
+Modify:  (must)
+    2026.3.25
+
+Description: (if None write None)
+    Realize the RPSEMD
+"""
+
 import numpy as np
 from .help_function import is_increasing
 from .EMD import emd
-from .COLOR.colorful_print import printc
+from COLOR.colorful_print import printc
 
 def rpsemd(S, T=None, f=None, M=4, max_imf=None, fs=1.0, spline_kind: str = "cubic", nbsym: int = 2, emd_max_imf=-1):
     """

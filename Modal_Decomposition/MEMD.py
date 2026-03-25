@@ -1,8 +1,22 @@
-import numpy as np
-import scipy.signal as sg
-from scipy.signal import find_peaks
-from scipy.interpolate import make_interp_spline, interp1d
+"""
 
+Python version:  (must)
+    3.10.11
+
+Lib and Version:  (if None write None)
+    numpy - 2.2.6
+
+Only accessed by:  (must)
+    Only __init__.py
+
+Modify:  (must)
+    2026.3.25
+
+Description: (if None write None)
+    Realize the MEMD
+"""
+
+import numpy as np
 
 def memd(S, d=None, k=None, max_imf=None, sd_thresh=0.2, max_iter=10):
     """
@@ -47,6 +61,7 @@ def memd(S, d=None, k=None, max_imf=None, sd_thresh=0.2, max_iter=10):
         h = residue.copy()
 
         for iter_num in range(max_iter):
+            h_old = h
             mean_envelope = compute_local_mean(h, vectors, projections, T)
 
             h_new = h - mean_envelope
@@ -141,6 +156,9 @@ def compute_local_mean(signal, vectors, projections, T):
     projections: projecttion of origin signal (N, k)
     T
     """
+    from scipy.signal import find_peaks
+    from scipy.interpolate import interp1d
+
     d, N = signal.shape
     k = vectors.shape[1]
 
@@ -198,6 +216,8 @@ def compute_local_mean(signal, vectors, projections, T):
     return mean_envelope
 
 def should_stop(residue):
+    from scipy.signal import find_peaks
+
     d, N = residue.shape
 
     for ch in range(d):

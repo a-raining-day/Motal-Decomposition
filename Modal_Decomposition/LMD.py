@@ -1,9 +1,27 @@
+"""
+
+Python version:  (must)
+    3.10.11
+
+Lib and Version:  (if None write None)
+    numpy - 2.2.6
+	scipy - 1.15.3
+
+Only accessed by:  (must)
+    Only __init__.py
+
+Modify:  (must)
+    2026.3.25
+
+Description: (if None write None)
+    Realize the LMD
+
+Modify:
+    2026.3.25 - Optimize the use of scipy
+"""
+
 import numpy as np
-import scipy.signal as sg
-import scipy.interpolate as ip
 from .help_function import is_increasing
-from scipy.signal import argrelextrema
-from scipy.signal import hilbert
 
 
 def lmd(S, max_pf=None, max_iter=37, eps=0.05):
@@ -14,6 +32,9 @@ def lmd(S, max_pf=None, max_iter=37, eps=0.05):
     :param eps: therhold
     :return: PFs, Res
     """
+    import scipy.interpolate as ip
+    from scipy.signal import argrelextrema
+
     if not isinstance(S, np.ndarray):
         S = np.array(S)
 
@@ -131,6 +152,8 @@ def lmd(S, max_pf=None, max_iter=37, eps=0.05):
     return np.array(PFs, dtype=np.float64), residue
 
 def compute_envelope(signal):
+    from scipy.signal import hilbert
+
     analytic_signal = hilbert(signal)
     amplitude_envelope = np.abs(analytic_signal)
     return amplitude_envelope

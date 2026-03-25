@@ -1,7 +1,21 @@
+"""
+Python version:  (must)
+    3.10.11
+
+Lib and Version:  (if None write None)
+    EMD-signal - 1.9.0
+
+Only accessed by:  (must)
+    Only __init__.py
+
+Modify:  (must)
+    2026.3.25
+
+Description: (if None write None)
+    Realize the CEEFD and CEEMDAN.
+"""
+
 import numpy as np
-import antropy as ant
-from Modal_Decomposition.EFD import EFD
-from PyEMD import CEEMDAN
 
 class CEEFD:
     """
@@ -41,6 +55,8 @@ class CEEFD:
         self.total_power_thr = total_power_thr
 
     def give_ceemdan(self):
+        from PyEMD import CEEMDAN
+
         return CEEMDAN \
             (
                 trials=self.trials,
@@ -70,8 +86,10 @@ class CEEFD:
     def ceefd(self, S, T=None, max_imf=-1):
         """
         :return: other_IMFs (ndarray-2D), IMF_ (np.ndarray-2D), Res (ndarray), Res_ (ndarray)
-
         """
+        from Modal_Decomposition.EFD import EFD
+        import antropy as ant
+
         CEEMDAN = self.give_ceemdan()
         IMF_Residue = CEEMDAN.ceemdan(S, T, max_imf)
 

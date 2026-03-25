@@ -3,9 +3,30 @@ Modal Decomposition:
     LMD、CEEMDAN、EFD、CEEFD、VMD、EEMD、FMD、EWT、SSA、RPSEMD、CEEMD、MEMD、ICEEMDAN、EMD
 
 GitHub url: https://github.com/a-raining-day/Modal-Decomposition
+
+Python version:
+    3.10.11
+
+Role:  (if None write None)
+    As the entrance of the lib
+
+Lib and Version:  (if None write None)
+    numpy - 2.2.6
+	typing - 4.15.0
+
+Only accessed by:  (must)
+    All
+
+Modify:  (must)
+    2026.3.25
+
+Description: (if None write None)
+    As the entrance of the lib
+
+Modify:
+    Optimize the cost of import, from 5.001s to 0.747s. Put some heavy lib into internal of the function
 """
-import numpy as np
-from typing import Literal
+from .help_function import is_increasing
 
 from .EFD import EFD
 from .CEEFD import CEEFD
@@ -22,42 +43,13 @@ from .LMD import lmd
 from .SVMD import SVMD
 from .EMD import emd
 
-__all__ = ["Class", "Function"]
-
-def is_increasing(S, threshold=2, tolerance: Literal["high", "mid", "low"]="high") -> bool:
-    def count_extrema(x):
-        interior = x[1:-1]
-        left = x[:-2]
-        right = x[2:]
-        maxima = (interior > left) & (interior > right)
-        minima = (interior < left) & (interior < right)
-        return np.sum(maxima) + np.sum(minima)
-
-    if tolerance == "high":
-        ans_3 = count_extrema(S) <= threshold
-        return ans_3
-
-    elif tolerance == "mid":
-        diff = np.diff(S)
-
-        sign_changes = np.diff(np.sign(diff))
-
-        count = np.sum(np.abs(sign_changes) == 2)
-
-        ans_1 = count <= threshold  # one way to check
-        return ans_1
-
-    else:
-        # the second way
-        ans_2 = np.all(S[1:] >= S[:-1]) or np.all(S[1:] <= S[:-1])
-        return ans_2
+__all__ = ["Class", "Function", "is_increasing"]
 
 ceefd_cls = CEEFD
 ceefd_real_cls = CEEFD()
 ssa_cls = SSA()
 svmd_cls = SVMD()
 
-# class | You can initial yourself class
 Origin_CEEFD = ceefd_cls
 Origin_EEMD = Origin_EEMD
 Origin_SSA = SSA
@@ -65,6 +57,7 @@ Origin_SVMD = SVMD
 
 
 class Class:
+    # class | You can initial yourself class
     CEEFD = Origin_CEEFD
     EEMD = Origin_EEMD
     SSA = Origin_SSA
