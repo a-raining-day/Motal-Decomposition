@@ -21,7 +21,7 @@ import numpy as np
 
 def ewt \
 (
-    S,
+    S: Union[list, np.ndarray],
     N: int = 5,
     log: int = 0,
     detect: str = "locmax",
@@ -32,7 +32,7 @@ def ewt \
     need_mfd: bool = False,
     need_boundaries: bool = False) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]]:
     """
-    :param S: Signal
+    :param S: Signal (1-dim)
     :param N:
     :param log:
     :param detect:
@@ -43,6 +43,9 @@ def ewt \
     :return: IMFs(N, len(S)) (2-dim)
     """
     from ewtpy import EWT1D
+
+    if not isinstance(S, np.ndarray):
+        S = np.array(S)
 
     ewt, mfb, boundaries = EWT1D(S, N, log, detect, completion, reg, lengthFilter, sigmaFilter)
     ewt = ewt.T

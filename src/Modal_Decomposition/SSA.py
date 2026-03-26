@@ -18,7 +18,7 @@ Description: (if None write None)
 """
 
 import numpy as np
-from typing import Tuple, Callable
+from typing import Union
 
 class SSA:
     def __init__(self, window_size=None):
@@ -32,15 +32,16 @@ class SSA:
         self.U_ = None
         self.V_ = None
 
-    def decompose(self, S, groups=None) -> Tuple[np.ndarray, np.ndarray]:
+    def decompose(self, S: Union[list, np.ndarray], groups=None) -> np.ndarray:
         """
-        :parameter:
-        S: Signal
-        groups: group information, such as: [[0], [1,2], [3,4]] means which components will be merged. If None, return all
+        :param S: Signal (1-dim)
+        :param groups: group information, such as: [[0], [1,2], [3,4]] means which components will be merged. If None, return all
 
-        :return:
-        RCs: IMFs Matrix | each row is a IMF
+        :return: IMFs (2-dim)
         """
+        if not isinstance(S, np.ndarray):
+            S = np.array(S)
+
         series = np.asarray(S).flatten()
         N = len(series)
 
@@ -89,7 +90,7 @@ class SSA:
         self.U_ = U
         self.V_ = VT
 
-        return self.components_, np.zeros((1, self.components_.shape[1]))
+        return self.components_
 
 
 # def give_fast_SSA() -> Callable:

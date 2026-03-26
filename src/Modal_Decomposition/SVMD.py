@@ -17,7 +17,7 @@ Description: (if None write None)
 """
 
 import numpy as np
-from typing import Tuple
+from typing import Tuple, Union
 
 class SVMD:
     def __init__(self, num_modes=3, alpha=2000, tol=1e-7):
@@ -43,9 +43,8 @@ class SVMD:
 
         return mode
 
-    def decompose(self, S) -> Tuple[np.ndarray, np.ndarray]:
+    def decompose(self, S: Union[list, np.ndarray]) -> Tuple[np.ndarray, np.ndarray]:
         """
-
         :param S: Signal (1-dim)
         :return: IMFs(2-dim), Res(1-dim)
         """

@@ -16,6 +16,7 @@ Description: (if None write None)
 """
 
 import numpy as np
+from typing import Union, Tuple
 
 class CEEFD:
     """
@@ -74,7 +75,32 @@ class CEEFD:
                 total_power_thr=self.total_power_thr
             )
 
-    def ceemdan(self, S, T=None, max_imf=-1):
+    def ceemdan(self, S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, max_imf: int=-1, fs=None) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        :param S: Signal (1-dim)
+        :param T: Time axis (1-dim)
+        :param max_imf: the num of the decomposed IMFs. | -1 means all.
+        :param fs: the f of Time.f default 1.
+        :return: IMFs (2-dim), Res (1-dim)
+        """
+
+        if not isinstance(S, np.ndarray):
+            S = np.array(S)
+
+        N = len(S)
+
+        if T is None:
+            if fs is not None:
+                dt = 1.0 / fs  # smaple for time axis
+                T = np.arange(N) * dt
+            else:
+                T = np.arange(N)  # default fs = 1
+                print(f"Warn: T is None，default T = [0, 1, 2, ..., {N - 1}]")
+
+        else:
+            if not isinstance(T, np.ndarray):
+                T = np.array(T)
+
         CEEMDAN = self.give_ceemdan()
         IMF_Residue = CEEMDAN.ceemdan(S, T, max_imf)
 
@@ -83,12 +109,34 @@ class CEEFD:
 
         return IMFs, Res
 
-    def ceefd(self, S, T=None, max_imf=-1):
+    def ceefd(self, S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, max_imf: int=-1, fs=1) -> [np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
-        :return: other_IMFs (ndarray-2D), IMF_ (np.ndarray-2D), Res (ndarray), Res_ (ndarray)
+        Give S, use CEEMDAN(s), get CEEMDAN-IMFs and CEEMDAN-Res, use EFD for the max sample entropy IMF, get EFD-IMFs and EFD-Res.
+        :param S: Signal (1-dim)
+        :param T: Time axis (1-dim)
+        :param max_imf: decomposition's result | if -1, decompose entirely.
+        :param fs: the f of Time. default 1.
+        :return: CEEMDAN_IMFs (2-dim), EFD_IMFs (2-dim), CEEMDAN_Res (1-dim), EFD_Res (1-dim)
         """
         from .EFD import EFD
         import antropy as ant
+
+        if not isinstance(S, np.ndarray):
+            S = np.ndarray(S)
+
+        N = len(S)
+
+        if T is None:
+            if fs is not None:
+                dt = 1.0 / fs  # smaple for time axis
+                T = np.arange(N) * dt
+            else:
+                T = np.arange(N)  # default fs = 1
+                print(f"Warn: T is None，default T = [0, 1, 2, ..., {N - 1}]")
+
+        else:
+            if not isinstance(T, np.ndarray):
+                T = np.array(T)
 
         CEEMDAN = self.give_ceemdan()
         IMF_Residue = CEEMDAN.ceemdan(S, T, max_imf)

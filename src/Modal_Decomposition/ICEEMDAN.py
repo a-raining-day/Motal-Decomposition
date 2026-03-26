@@ -19,27 +19,41 @@ Description: (if None write None)
 import numpy as np
 from .EMD import emd
 from .help_function import is_increasing
+from typing import Union, Tuple
 
 
-def iceemdan(S, T=None, Ne=300, epsilon_0=None, max_imf=None, verbose: bool=False, spline_kind: str = "cubic", nbsym: int = 2, emd_max_imf=-1, fs=None):
+def iceemdan(S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, Ne=300, epsilon_0=None, max_imf=None, verbose: bool=False, spline_kind: str = "cubic", nbsym: int = 2, emd_max_imf=-1, fs=None)\
+        -> Tuple[np.ndarray, np.ndarray]:
     """
-    :param emd_max_imf:
-    :param nbsym:
-    :param spline_kind:
-    :param verbose: is print formation
     :param S: Signal (1-dim)
+    :param T: Time axis (1-dim)
     :param Ne: total num of samples (times of add noise), default 300
     :param epsilon_0: initial amplitude of noise，default: 0.2 * std(S) / std(noise)
     :param max_imf: max num of IMFs
-    :return: IMFs, Res
+    :param verbose: dose print formation
+    :param spline_kind: the kind of spline. default cubic
+    :param nbsym:
+    :param emd_max_imf: the max num of IMFs with EMD
+    :param fs: the f of T, default 1.
+    :return: IMFs (2-dim), Res (1-dim)
     """
 
     if not isinstance(S, np.ndarray):
         S = np.array(S)
 
     T_len = len(S)
+
     if T is None:
-        T = np.arange(0, T_len, 1)
+        if fs is not None:
+            dt = 1.0 / fs  # smaple for time axis
+            T = np.arange(T_len) * dt
+        else:
+            T = np.arange(T_len)  # default fs = 1
+            print(f"Warn: T is None，default T = [0, 1, 2, ..., {T_len - 1}]")
+
+    else:
+        if not isinstance(T, np.ndarray):
+            T = np.array(T)
 
     white_noise = np.random.randn(Ne, T_len)  # generate Ne white nose
 

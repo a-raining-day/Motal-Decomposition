@@ -20,12 +20,15 @@ Description: (if None write None)
 
 import numpy as np
 from .COLOR import printc
+from typing import Union, Tuple
 
-def EFD(S, T=None, fs=None):
+
+def EFD(S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, fs=None) -> Tuple[np.ndarray, np.ndarray]:
     """
     :param S: Signal (1-dim)
-    :param T: Time axis (uniform spacing)
-    :return: IMFs: np.ndarray (2-dim) | Res: np.ndarray (1-dim)
+    :param T: Time axis (1-dim)
+    :param fs: the f of T (default fs = 1)
+    :return: IMFs 2-dim | Res: 1-dim
     """
     from scipy.signal import find_peaks
 
@@ -41,6 +44,10 @@ def EFD(S, T=None, fs=None):
         else:
             T = np.arange(N)  # default fs = 1
             printc(f"Warn: T is None，default T = [0, 1, 2, ..., {N - 1}]", color="red")
+
+    else:
+        if not isinstance(T, np.ndarray):
+            T = np.array(T)
 
     if len(T) != N:
         raise ValueError(f"len of T: ({len(T)}) doesn't match ({N})")

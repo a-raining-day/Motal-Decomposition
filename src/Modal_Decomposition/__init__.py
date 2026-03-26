@@ -24,7 +24,8 @@ Description: (if None write None)
     As the entrance of the lib
 
 Modify:
-    Optimize the cost of import, from 5.001s to 0.747s. Put some heavy lib into internal of the function
+    2026.3.25 - Optimize the cost of import, from 5.001s to 0.747s. Put some heavy lib into internal of the function
+    2026.3.26 - Optimize the description of the type of input and output. now, the dim of input and output is more clear.
 """
 from .help_function import is_increasing
 
@@ -66,6 +67,7 @@ class Class:
 
 class Function:
     # function | default function for modal decomposition
+    # the IMFs (2-dim) means: (K, len(Signal)) (K is the num of IMFs)
     EFD = EFD
     CEEFD = ceefd_real_cls.ceefd
     CEEMDAN = ceefd_real_cls.ceemdan

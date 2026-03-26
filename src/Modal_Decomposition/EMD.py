@@ -19,19 +19,20 @@ Description: (if None write None)
 from PyEMD import EMD
 import numpy as np
 from .COLOR.colorful_print import printc
-from typing import Tuple
+from typing import Tuple, Union
 
 EMD_cls = EMD
 
-def emd(S, T=None, spline_kind: str = "cubic", nbsym: int = 2, max_imf=-1, fs=None) -> Tuple[np.ndarray, np.ndarray]:
+def emd(S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, spline_kind: str = "cubic", nbsym: int = 2, max_imf=-1, fs=None)\
+        -> Tuple[np.ndarray, np.ndarray]:
     """
-    :param S:
-    :param T:
-    :param spline_kind:
+    :param S: Signal (1-dim)
+    :param T: Time axis (1-dim)
+    :param spline_kind: the kind of spline. default cubic.
     :param nbsym:
-    :param max_imf:
-    :param fs:
-    :return: IMFs (2-dim), Res: None
+    :param max_imf: the max num of IMFs
+    :param fs: the f of T. default 1.
+    :return: IMFs (2-dim), Res (1-dim)
     """
     if not isinstance(S, np.ndarray):
         S = np.array(S)

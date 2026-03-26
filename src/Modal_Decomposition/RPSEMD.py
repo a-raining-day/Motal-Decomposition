@@ -19,19 +19,20 @@ import numpy as np
 from .help_function import is_increasing
 from .EMD import emd
 from .COLOR import printc
+from typing import Union, Tuple
 
-def rpsemd(S, T=None, f=None, M=4, max_imf=None, fs=1.0, spline_kind: str = "cubic", nbsym: int = 2, emd_max_imf=-1):
+def rpsemd(S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, f=None, M=4, max_imf=None, fs=1.0, spline_kind: str = "cubic", nbsym: int = 2, emd_max_imf=-1) -> Tuple[np.ndarray, np.ndarray]:
     """
-    :param emd_max_imf:
-    :param nbsym:
-    :param spline_kind:
-    :param fs:
+    :param S: Signal (1-dim)
     :param T: time axis
-    :param max_imf: max num of IMFs
-    :param S: Signal
     :param f: auxiliary sine wave frequency
     :param M: num of phases
-    :return: IMFs, Res -> np.ndarray(2-dim)
+    :param max_imf: max num of IMFs
+    :param fs: the f of Time. default 1.
+    :param spline_kind: the kind of spline. default cubic spline.
+    :param nbsym:
+    :param emd_max_imf: the max IMFs of EMD
+    :return: IMFs (2-dim), Res (1-dim)
     """
 
     if not isinstance(S, np.ndarray):
@@ -51,6 +52,10 @@ def rpsemd(S, T=None, f=None, M=4, max_imf=None, fs=1.0, spline_kind: str = "cub
     if T is None:
         T = np.arange(len(S))
         print(f"warn：T is None | deault：T = 0, 1, 2, ..., {len(S) - 1}")
+
+    else:
+        if not isinstance(T, np.ndarray):
+            T = np.array(T)
 
     phi = np.array([2.0 * np.pi * i / M for i in range(M)])
 

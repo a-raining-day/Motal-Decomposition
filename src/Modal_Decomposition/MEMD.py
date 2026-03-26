@@ -17,16 +17,17 @@ Description: (if None write None)
 """
 
 import numpy as np
+from typing import Union, Tuple
 
-def memd(S, d=None, k=None, max_imf=None, sd_thresh=0.2, max_iter=10):
+def memd(S: Union[list, np.ndarray], d=None, k=None, max_imf=None, sd_thresh=0.2, max_iter=10) -> Tuple[np.ndarray, np.ndarray]:
     """
-    :param S: Signal，(d, N)，d -> channels，N -> time points
+    :param S: Signal (2-dim), (d, N) | d -> channels,N -> time points
     :param d: channels or dimensions
     :param k: number of directional vector,default: d * 128
     :param max_imf: max num of IMFs
     :param sd_thresh: therahold
     :param max_iter: max iterations of each IMF
-    :return: IMFs -> (n_imfs, d, N)
+    :return: IMFs (d, N), Res (2-dim)
     """
 
     if not isinstance(S, np.ndarray):

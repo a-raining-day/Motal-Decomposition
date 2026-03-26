@@ -70,12 +70,12 @@ Description: (if None write None)
 the description of function:
     {description}
 
-    the *args and **kwargs:
-        *args:
-            {args}
-            
-        **kwargs:
-            {kwargs}       
+the *args and **kwargs:
+    *args:
+        {args}
+        
+    **kwargs:
+        {kwargs}       
     """
 }
 

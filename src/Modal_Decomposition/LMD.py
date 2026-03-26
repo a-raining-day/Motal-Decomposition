@@ -22,15 +22,15 @@ Modify:
 
 import numpy as np
 from .help_function import is_increasing
+from typing import Union, Tuple
 
-
-def lmd(S, max_pf=None, max_iter=37, eps=0.05):
+def lmd(S: Union[list, np.ndarray], max_pf=None, max_iter=37, eps=0.05) -> Tuple[np.ndarray, np.ndarray]:
     """
     :param S: Signal (1-dim)
     :param max_pf: max num of pfs
     :param max_iter: max iterations of each pf
     :param eps: therhold
-    :return: PFs, Res
+    :return: PFs (2-dim), Res (1-dim)
     """
     import scipy.interpolate as ip
     from scipy.signal import argrelextrema

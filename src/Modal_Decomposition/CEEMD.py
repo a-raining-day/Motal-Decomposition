@@ -17,6 +17,7 @@ Description: (if None write None)
     Realize the CEEMD.
 """
 
+from typing import Union, Tuple
 from time import sleep
 import numpy as np
 from .EMD import emd
@@ -25,17 +26,17 @@ from tqdm import tqdm
 import sys
 
 
-def ceemd(S, T=None, fs=None, beta=0.3, max_imf=None, iterations=30, verbose: bool=False):
+def ceemd(S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, fs=None, beta=0.3, max_imf=None, iterations=30, verbose: bool=False) \
+        -> Tuple[np.ndarray, np.ndarray]:
     """
-
-    :param S:
-    :param T:
-    :param fs:
+    :param S: Signal (1-dim)
+    :param T: the time axis.
+    :param fs: the f of Time. default 1.
     :param beta:
-    :param max_imf: -1 or other int | 100 is enough, if you choose -1, no one kown when it will finish(^_^)
+    :param max_imf: -1 or other int | 100 is enough, if you choose -1, no one kown when finish(^_^)
     :param iterations:
     :param verbose:
-    :return:
+    :return: IMFs (2-dim), Res (1-dim)
     """
     N = len(S)
 

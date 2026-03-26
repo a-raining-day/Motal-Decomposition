@@ -15,7 +15,11 @@ Description: (if None write None)
     Realize VMD by using vmdpy lib.
 """
 
-def vmd(S, alpha = 2000, tau = 0.0, K = 2, DC = 0, init = 1, tol = 1e-7):
+from typing import Union, Tuple
+import numpy as np
+
+
+def vmd(S: Union[list, np.ndarray], alpha = 2000, tau = 0.0, K = 2, DC = 0, init = 1, tol = 1e-7) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     :param S: Signal (1-dim)
     :param alpha: broadband constraints
@@ -24,9 +28,12 @@ def vmd(S, alpha = 2000, tau = 0.0, K = 2, DC = 0, init = 1, tol = 1e-7):
     :param DC: is included directional component
     :param init: way of initial
     :param tol: convergence threshold
-    :return:
+    :return: IMFs (2-dim), u_hat (2-dim), omega (1-dim)
     """
     from vmdpy import VMD
+
+    if not isinstance(S, np.ndarray):
+        S = np.array(S)
 
     u, u_hat, omega = VMD(S, alpha, tau, K, DC, init, tol)
 

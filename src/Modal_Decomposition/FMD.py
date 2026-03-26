@@ -18,6 +18,7 @@ Description: (if None write None)
 """
 
 import numpy as np
+from typing import Union
 
 def initialize_filters(L, K):
     from scipy.signal import firwin
@@ -41,7 +42,7 @@ def estimate_period(signal):
        period = len(signal)
     return period
 
-def fmd(S, n=10, L=100, max_iters=10):
+def fmd(S: Union[list, np.ndarray], n=10, L=100, max_iters=10) -> np.ndarray:
     """
     :param S: Signal (2-dim)
     :param n: store n IMFs
@@ -66,4 +67,4 @@ def fmd(S, n=10, L=100, max_iters=10):
        if len(modes) >= n:
            break
 
-    return modes[:n]
+    return np.array(modes[:n])

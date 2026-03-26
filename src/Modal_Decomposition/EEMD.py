@@ -14,11 +14,22 @@ Modify:  (must)
 Description: (if None write None)
     Realize the EEMD.
 """
-
+import numpy as np
 from PyEMD import EEMD
+from typing import Union, Tuple
 
 Origin_EEMD = EEMD
 
 EEMD = EEMD()
-def eemd(S):
-    return EEMD.eemd(S)
+def eemd(S: Union[list, np.ndarray]) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    :param S: Signal (1-dim)
+    :return: IMFs (2-dim), Res (1-dim)
+    """
+    if not isinstance(S, np.ndarray):
+        S = np.array(S)
+
+    IMFs = EEMD.eemd(S)
+    Res = EEMD.residue
+
+    return IMFs, Res
