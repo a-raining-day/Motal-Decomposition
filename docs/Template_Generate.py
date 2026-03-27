@@ -11,11 +11,12 @@ Lib and Version:  (if None write None)
 Only accessed by:  (must)
     All
 
-Modify:  (must)
-    2026.3.25
-
 Description: (if None write None)
     You can write the template page with this file, and it will be copied to clipboard auto.
+
+Modify:  (must)
+    2026.3.25 - I forget.
+    2026.3.27 - Change the template. The context sequence is be more influence.
 """
 
 from datetime import datetime
@@ -57,12 +58,12 @@ Lib and Version:  (if None write None)
 
 Only accessed by:  (must)
     {Object}
-
-Modify:  (must)
-    {time}
     
 Description: (if None write None)
     {description}
+    
+Modify:  (must)
+    {time}
     """,
 
     "function":
