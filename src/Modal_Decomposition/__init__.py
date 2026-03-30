@@ -23,6 +23,17 @@ Modify:  (must)
 Description: (if None write None)
     As the entrance of the lib
 
+Dependence:
+    antropy
+    colorama
+    einops
+    EMD-signal
+    ewtpy
+    numba
+    numpy
+    scipy
+    vmdpy
+
 Modify:
     2026.3.25 - Optimize the cost of import, from 5.001s to 0.747s. Put some heavy lib into internal of the function
     2026.3.26 - Optimize the description of the type of input and output. now, the dim of input and output is more clear.
@@ -31,7 +42,7 @@ Modify:
 from .help_function import is_increasing
 
 from .EFD import EFD
-from .CEEFD import CEEFD
+from .CEEFD import CEEFD, Cyclic_CEEFD
 from .VMD import vmd
 from .EEMD import Origin_EEMD, eemd
 from .FMD import fmd
@@ -45,17 +56,23 @@ from .LMD import lmd
 from .SVMD import SVMD
 from .EMD import emd
 
+import warnings
+warnings.warn("This lib is deeply rebuilding...")
+
 __all__ = ["Class", "Function", "is_increasing"]
 
 ceefd_cls = CEEFD
 ceefd_real_cls = CEEFD()
 ssa_cls = SSA()
 svmd_cls = SVMD()
+cyc_ceefd = Cyclic_CEEFD()
 
 Origin_CEEFD = ceefd_cls
 Origin_EEMD = Origin_EEMD
 Origin_SSA = SSA
 Origin_SVMD = SVMD
+Origin_Cyc_CEEFD = Cyclic_CEEFD
+
 
 
 class Class:
@@ -64,6 +81,7 @@ class Class:
     EEMD = Origin_EEMD
     SSA = Origin_SSA
     SVMD = Origin_SVMD
+    Cyclic_CEEFD = Origin_Cyc_CEEFD
 
 
 class Function:
@@ -71,6 +89,7 @@ class Function:
     # the IMFs (2-dim) means: (K, len(Signal)) (K is the num of IMFs)
     EFD = EFD
     CEEFD = ceefd_real_cls.ceefd
+    Cyclic_CEEFD = cyc_ceefd
     CEEMDAN = ceefd_real_cls.ceemdan
     VMD = vmd
     EEMD = eemd
@@ -82,6 +101,6 @@ class Function:
     MEMD = memd
     ICEEMDAN = iceemdan
     LMD = lmd
-    SVMD = svmd_cls.decompose
+    SVMD = svmd_cls
     EMD = emd
 
