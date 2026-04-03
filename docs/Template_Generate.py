@@ -40,12 +40,12 @@ Lib and Version:  (if None write None)
 
 Only accessed by:  (must)
     {Object}
-
-Modify:  (must)
-    {time}
     
 Description: (if None write None)
     {description}
+    
+Modify:  (must)
+    {time} - Create
     """,
 
     "sub-lib":
@@ -63,7 +63,7 @@ Description: (if None write None)
     {description}
     
 Modify:  (must)
-    {time}
+    {time} - Create
     """,
 
     "function":

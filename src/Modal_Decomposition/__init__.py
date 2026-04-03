@@ -39,69 +39,103 @@ Modify:
     2026.3.26 - Optimize the description of the type of input and output. now, the dim of input and output is more clear.
     2026.3.29 - Optimize the SSA.decompose function, time changed from 40min averagely to 2s averagely.
     2026.3.30 - Rebuilding All.
+    2026.3.30 - Optimize the function of judging monotonicity.
 """
+
+import threading
+from importlib import import_module
+
 from .help_function import is_increasing
 
-from .EFD import EFD
-from .CEEFD import CEEFD, Cyclic_CEEFD
-from .VMD import vmd
-from .EEMD import Origin_EEMD, eemd
-from .FMD import fmd
-from .EWT import ewt
-from .SSA import SSA
-from .RPSEMD import rpsemd
+from .CEEFD import ceefd
 from .CEEMD import ceemd
-from .MEMD import memd
+from .CEEMDAN import ceemdan
+from .EEMD import eemd
+from .EFD import efd
+from .EMD import emd
+from .EWT import ewt
+from .FMD import fmd
 from .ICEEMDAN import iceemdan
 from .LMD import lmd
-from .SVMD import SVMD
-from .EMD import emd
+from .MEMD import memd
+from .RPSEMD import rpsemd
+from .SSA import SSA, ssa
+from .SVMD import svmd
+from .VMD import vmd
+
 
 import warnings
-warnings.warn("This lib is deeply rebuilding...")
+warnings.warn("The MEMD is rebuilding...")
 
-__all__ = ["Class", "Function", "is_increasing"]
-
-ceefd_cls = CEEFD
-ceefd_real_cls = CEEFD()
-ssa_cls = SSA()
-svmd_cls = SVMD()
-cyc_ceefd = Cyclic_CEEFD()
-
-Origin_CEEFD = ceefd_cls
-Origin_EEMD = Origin_EEMD
-Origin_SSA = SSA
-Origin_SVMD = SVMD
-Origin_Cyc_CEEFD = Cyclic_CEEFD
-
-
+__all__ = ["Function", "Class"]
 
 class Class:
-    # class | You can initial yourself class
-    CEEFD = Origin_CEEFD
-    EEMD = Origin_EEMD
-    SSA = Origin_SSA
-    SVMD = Origin_SVMD
-    Cyclic_CEEFD = Origin_Cyc_CEEFD
+    __cache = {}
 
+    CEEFD = ceefd
+
+    @classmethod
+    def EEMD(cls, **kwargs):
+        if "EEMD" not in cls.__cache:
+            try:
+                Module = import_module("PyEMD").EEMD
+                cls.__cache["EEMD"] = Module
+                return Module(**kwargs)
+            except ImportError:
+                raise ImportError("No PyEMD, Please use `pip install EMD-signal`")
+
+        else:
+            return cls.__cache["EEMD"](**kwargs)
+
+    @classmethod
+    def EWT1D(cls, **kwargs):
+        if "EWT1D" not in cls.__cache:
+            try:
+                Module = import_module("ewtpy").EWT1D
+                cls.__cache["EWT1D"] = Module
+                return Module(**kwargs)
+            except ImportError:
+                raise ImportError("No ewtpy, Please use `pip install ewtpy`")
+
+        else:
+            return cls.__cache["EWT1D"](**kwargs)
+
+    SSA = SSA
+    SVMD = SVMD
+
+    @classmethod
+    def VMD(cls, **kwargs):
+        if "EWT1D" not in cls.__cache:
+            try:
+                Module = import_module("vmdpy").EWT1D
+                cls.__cache["VMD"] = Module
+                return Module(**kwargs)
+            except ImportError:
+                raise ImportError("No vmdpy, Please use `pip install vmdpy`")
+
+        else:
+            return cls.__cache["VMD"](**kwargs)
 
 class Function:
     # function | default function for modal decomposition
     # the IMFs (2-dim) means: (K, len(Signal)) (K is the num of IMFs)
-    EFD = EFD
-    CEEFD = ceefd_real_cls.ceefd
-    Cyclic_CEEFD = cyc_ceefd
-    CEEMDAN = ceefd_real_cls.ceemdan
-    VMD = vmd
-    EEMD = eemd
-    FMD = fmd
-    EWT = ewt
-    SSA = ssa_cls
-    RPSEMD = rpsemd
+    # CEEFD = ceefd_real_cls.ceefd
+    CEEFD = Class.CEEFD(fs=1.0, min_peak_distance=10, envelop_iter=3)
     CEEMD = ceemd
-    MEMD = memd
+    CEEMDAN = ceemdan
+    EEMD = eemd
+    EFD = efd
+    EMD = emd
+    EWT = ewt
+    FMD = fmd
     ICEEMDAN = iceemdan
     LMD = lmd
-    SVMD = svmd_cls
-    EMD = emd
+    MEMD = memd
+    RPSEMD = rpsemd
+    SSA = ssa
+    SVMD = svmd
+    VMD = vmd
 
+
+if __name__ == '__main__':
+    ...

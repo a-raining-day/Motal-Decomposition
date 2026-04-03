@@ -16,7 +16,7 @@ def time_show(f: Callable) -> Callable:
 def check_result(**kwargs):
     IMFs: np.ndarray = kwargs.get("IMFs", None)  # IMFs
     Res: np.ndarray = kwargs.get("Res", None)  # Res
-    S: np.ndarray = kwargs.get("S", None)  # origin signal
+    S: np.ndarray = kwargs.get("S", None)  # origin S
 
     RMSE = None
     OI = None
@@ -69,19 +69,9 @@ def test_SSA(S):
 
 
 if __name__ == '__main__':
-    t = np.arange(0, 1000, 1)
-    S = 1 + np.sin(t ** 2) + 4 * np.cos(3 * t - 1) - (np.sin(t + 3) * 9) ** 2
+    import numpy as np
+    from scipy.signal import firwin, hilbert, correlate, get_window
+    from scipy.linalg import inv
+    import matplotlib.pyplot as plt
 
-    test_SSA(S)
 
-    # a = np.array \
-    # (
-    #     [
-    #         [1, 2, 3, 8],
-    #         [2, 5, 7, 2],
-    #         [3, 5, 1, 3],
-    #         [1, 4, 5, 2]
-    #     ]
-    # )
-    #
-    # print(a[[0, 1], 3])

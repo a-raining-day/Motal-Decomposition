@@ -3,164 +3,130 @@ Python version:  (must)
     3.10.11
 
 Lib and Version:  (if None write None)
-    EMD-signal - 1.9.0
+    EMD-S - 1.9.0
 
 Only accessed by:  (must)
     Only __init__.py
 
-Modify:  (must)
-    2026.3.25
-
 Description: (if None write None)
     Realize the CEEFD and CEEMDAN.
+
+Modify:  (must)
+    2026.3.25 - Create
+    2026.3.30 - Desperate the CEEMDAN and the CEEFD, and rename the Cyclic_CEEFD as CEEFD, del the origin CEEFD.
 """
 
 import numpy as np
 from typing import Union, Tuple
 
-class CEEFD:
-    """
-    CEEFD
-    """
 
-    def __init__ \
-        (
-            self,
-            trials=10,
-            noise_width=0.05,  # default: 0.05-0.3
-            noise_seed=42,  # seed
-            spline_kind='cubic',
-            nbsym=2,  # Number of boundary symmetry points
-            extrema_detection='parabol',
-            parallel=False,
-            processes=None,  # None = auto, int >= 1
-            random_state=42,
-            noise_scale=1.0,  # scale factor of noise
-            noise_kind='normal',  # noise kind: 'normal', 'uniform'
-            range_thr=0.01,  # Stop threshold
-            total_power_thr=0.005
-        ):
+class ceefd:
+    """CEEFD: Cyclic Envelop Empirical Fourier Decomposition"""
 
-        self.trials = trials
-        self.noise_width = noise_width
-        self.noise_seed = noise_seed
-        self.spline_kind = spline_kind
-        self.nbsym = nbsym
-        self.extrema_detection = extrema_detection
-        self.parallel = parallel
-        self.processes = processes
-        self.random_state = random_state
-        self.noise_scale = noise_scale
-        self.noise_kind = noise_kind
-        self.range_thr = range_thr
-        self.total_power_thr = total_power_thr
+    def __init__(self, fs=1.0, min_peak_distance=10, envelop_iter=3):
+        self.fs = fs
+        self.min_peak_distance = min_peak_distance
+        self.envelop_iter = envelop_iter
 
-    def give_ceemdan(self):
-        from PyEMD import CEEMDAN
+    def __call__(self, S):
+        return self.decompose(S)
 
-        return CEEMDAN \
-            (
-                trials=self.trials,
-                noise_width=self.noise_width,
-                noise_seed=self.noise_seed,
-                spline_kind=self.spline_kind,
-                nbsym=self.nbsym,
-                extrema_detection=self.extrema_detection,
-                parallel=self.parallel,
-                processes=self.processes,
-                random_state=self.random_state,
-                noise_scale=self.noise_scale,
-                noise_kind=self.noise_kind,
-                range_thr=self.range_thr,
-                total_power_thr=self.total_power_thr
-            )
+    def _compute_spectral_envelope(self, mag_spectrum):
+        from scipy.signal import windows
 
-    def ceemdan(self, S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, max_imf: int=-1, fs=None) -> Tuple[np.ndarray, np.ndarray]:
+        n = len(mag_spectrum)
+        envelope = np.copy(mag_spectrum)
+        window_size = int(0.05 * n)
+        window = windows.boxcar(window_size)
+
+        for _ in range(self.envelop_iter):
+            envelope = np.convolve(envelope, window, mode='same') / window_size
+            envelope = np.maximum(envelope, mag_spectrum)
+        return envelope
+
+    def _extract_imf(self, signal, freq_bins):
+        N = len(signal)
+        fft_signal = np.fft.fft(signal)
+
+        mask = np.zeros(N, dtype=bool)
+        mask[freq_bins] = True
+        mask[N - np.array(freq_bins)] = True
+
+        imf_fft = fft_signal * mask
+        imf = np.fft.ifft(imf_fft).real
+
+        return imf, mask
+
+    def decompose(self, S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None) -> Tuple[np.ndarray, np.ndarray]:
         """
-        :param S: Signal (1-dim)
-        :param T: Time axis (1-dim)
-        :param max_imf: the num of the decomposed IMFs. | -1 means all.
-        :param fs: the f of Time.f default 1.
+        CEEFD: Cyclic Envelope Empirical Fourier Decomposition
+
+        :param S: Signal
+        :param T: Time-axis, accepted formation is Unix array. Default uniformly sample.
         :return: IMFs (2-dim), Res (1-dim)
         """
+
+        from scipy.signal import find_peaks
 
         if not isinstance(S, np.ndarray):
             S = np.array(S)
 
+        if S.ndim == 0:
+            raise ValueError("The dim of the S must be 1-dim, not 0")
+
+        elif S.ndim > 1:
+            if 1 in S.shape:
+                S = S.reshape(-1)
+
+            else:
+                raise ValueError(f"The dim of S must be 1-dim, not {S.ndim}")
+
         N = len(S)
 
-        if T is None:
-            if fs is not None:
-                dt = 1.0 / fs  # smaple for time axis
-                T = np.arange(N) * dt
-            else:
-                T = np.arange(N)  # default fs = 1
-                print(f"Warn: T is None，default T = [0, 1, 2, ..., {N - 1}]")
+        if T is None:  # if T is None, default generate uniform T-axis.
+            T = np.arange(N)  # default fs = 1
+            print(f"Warn: T is None，default T = [0, 1, 2, ..., {N - 1}]")
 
         else:
             if not isinstance(T, np.ndarray):
                 T = np.array(T)
 
-        CEEMDAN = self.give_ceemdan()
-        IMF_Residue = CEEMDAN.ceemdan(S, T, max_imf)
+        fft_signal = np.fft.fft(S)
+        mag_spectrum = np.abs(fft_signal[:N // 2 + 1])
 
-        IMFs = IMF_Residue[:-1, :]  # shape [n_imfs, len(S)]
-        Res = IMF_Residue[-1, :]
+        envelope = self._compute_spectral_envelope(mag_spectrum)
 
-        return IMFs, Res
+        peaks, properties = find_peaks(envelope, distance=self.min_peak_distance)
 
-    def ceefd(self, S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, max_imf: int=-1, fs=1) -> [np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Give S, use CEEMDAN(s), get CEEMDAN-IMFs and CEEMDAN-Res, use EFD for the max sample entropy IMF, get EFD-IMFs and EFD-Res.
-        :param S: Signal (1-dim)
-        :param T: Time axis (1-dim)
-        :param max_imf: decomposition's result | if -1, decompose entirely.
-        :param fs: the f of Time. default 1.
-        :return: CEEMDAN_IMFs (2-dim), EFD_IMFs (2-dim), CEEMDAN_Res (1-dim), EFD_Res (1-dim)
-        """
-        from .EFD import EFD
-        import antropy as ant
+        if len(peaks) == 0:
+            return [S], []
 
-        if not isinstance(S, np.ndarray):
-            S = np.ndarray(S)
+        boundaries = [0]
+        for i in range(len(peaks) - 1):
+            boundary = (peaks[i] + peaks[i + 1]) // 2
+            boundaries.append(boundary)
+        boundaries.append(N // 2)
 
-        N = len(S)
+        imfs = []
+        freq_masks = []
 
-        if T is None:
-            if fs is not None:
-                dt = 1.0 / fs  # smaple for time axis
-                T = np.arange(N) * dt
-            else:
-                T = np.arange(N)  # default fs = 1
-                print(f"Warn: T is None，default T = [0, 1, 2, ..., {N - 1}]")
+        for i in range(len(boundaries) - 1):
+            start_bin = boundaries[i]
+            end_bin = boundaries[i + 1]
 
-        else:
-            if not isinstance(T, np.ndarray):
-                T = np.array(T)
+            if end_bin - start_bin < 2:
+                continue
 
-        CEEMDAN = self.give_ceemdan()
-        IMF_Residue = CEEMDAN.ceemdan(S, T, max_imf)
+            freq_bins = list(range(start_bin, end_bin))
+            imf, mask = self._extract_imf(S, freq_bins)
+            imfs.append(imf)
+            freq_masks.append(mask)
 
-        IMFs = IMF_Residue[:-1, :]  # shape [n_imfs, len(S)]
-        Res = IMF_Residue[-1, :]
+        residual = S.copy()
+        for imf in imfs:
+            residual -= imf
 
-        # cal sample entropy of IMF
-        Entropy = [ant.sample_entropy(IMF) for IMF in IMFs]
-        max_entropy_mask = np.argmax(Entropy)
-        maxIMF = IMFs[max_entropy_mask]
+        if np.abs(residual).max() > 1e-10:
+            imfs.append(residual)
 
-        # EMD for max antropy IMF
-        if T is None:
-            T_efd = np.arange(len(maxIMF))
-        else:
-            T_efd = T
-        IMF_, Res_ = EFD(maxIMF, T_efd)
-
-        # get other_IMFs
-        other_IMFs_list = [IMF for i, IMF in enumerate(IMFs) if i != max_entropy_mask]
-        if other_IMFs_list:
-            other_IMFs = np.stack(other_IMFs_list)
-        else:
-            other_IMFs = None
-
-        return other_IMFs, np.array(IMF_), Res, Res_
+        return np.array(imfs), residual

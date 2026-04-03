@@ -21,6 +21,8 @@ import numpy as np
 
 def vmd(S: Union[list, np.ndarray], alpha = 2000, tau = 0.0, K = 2, DC = 0, init = 1, tol = 1e-7) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
+    VMD: Variational Mode Decomposition
+
     :param S: Signal (1-dim)
     :param alpha: broadband constraints
     :param tau: noise tolerance

@@ -3,7 +3,7 @@ Python version:  (must)
     3.10.11
 
 Lib and Version:  (if None write None)
-    EMD-signal - 1.9.0
+    EMD-S - 1.9.0
 
 Only accessed by:  (must)
     Only __init__.py
@@ -12,25 +12,119 @@ Description: (if None write None)
     Realize the EEMD.
 
 Modify:  (must)
-    2026.3.25 - I don't know, because when I'm find I don't write this line.
+    2026.3.25 - Create.
     2026.3.27 - Change the EEMD class' usage. EEMD(parallel=True) (default) -> EEMD(parallel=False). Now, it will not use parallel default.
+    2026.4.2  - Finish the Optimization of the EEMD. Correct the logic.
 """
+
 import numpy as np
-from PyEMD import EEMD
-from typing import Union, Tuple
+from typing import Union, Tuple, Optional
+from .Utils import monotonic_increasing, monotonic_decreasing
+from .Error import CycleError
+from time import sleep
+from warnings import warn
+from .EMD import emd
 
-Origin_EEMD = EEMD
 
-EEMD = EEMD(parallel=False)
-def eemd(S: Union[list, np.ndarray]) -> Tuple[np.ndarray, np.ndarray]:
+def eemd(S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, N_whitenoise=300, beta=0.3, max_imf: Optional[int]=None, dead_line: int=10, verbose: bool=False) \
+        -> Tuple[np.ndarray, np.ndarray]:
     """
+    EEMD: Ensemble Empirical Mode Decomposition
+
     :param S: Signal (1-dim)
-    :return: IMFs (2-dim), Res (1-dim)
+    :param T: the time axis.
+    :param N_whitenoise: the num of the added whitenoise.
+    :param beta:
+    :param max_imf: -1, None or other int | -1 means decompose completely, None means give a int auto, other int means the num of the IMFs
+    :param dead_line: Sometime it'll be in unuseful cycle, when the average of the N's sequence with added whitenoise is empty([]). It'll be forced exit when the time of the cycle above the deadline.
+    :param verbose:
+    :return: IMFs (n_IMFs, N), Res (N,)
     """
+    if beta <= 0:
+        raise ValueError("The beta should > 0")
+
+    if N_whitenoise <= 0 or not isinstance(N_whitenoise, int):
+        raise TypeError("N_whitenoise must be int type or > 0")
+
     if not isinstance(S, np.ndarray):
         S = np.array(S)
 
-    IMFs = EEMD.eemd(S)
-    Res = EEMD.residue
+    if S.ndim == 0:
+        raise ValueError("The dim of the S must be 1-dim, not 0")
 
-    return IMFs, Res
+    elif S.ndim > 1:
+        if 1 in S.shape:
+            S = S.reshape(-1)
+
+        else:
+            raise ValueError(f"The dim of S must be 1-dim, not {S.ndim}")
+
+    N = len(S)
+
+    if T is None:  # if T is None, default generate uniform T-axis.
+        T = np.arange(N)  # default fs = 1
+        print(f"Warn: T is None，default T = [0, 1, 2, ..., {N - 1}]")
+
+    else:
+        if not isinstance(T, np.ndarray):
+            T = np.array(T)
+
+        if len(T) != len(S):
+            raise ValueError("The length of T must be equal to Signal.")
+
+        if not np.all(np.diff(T) > 0):
+            raise ValueError("T should be monotonic increasing!")
+
+        if np.any(np.allclose(np.diff(np.diff(T)))):
+            warn("The T is not uniform! Some error may happen.")
+
+    if max_imf is None:
+        max_imf = int(np.log2(len(S))) + 2
+
+    Res = S
+    IMFs = []
+
+    # std_dev = np.std(S)
+
+    count = 0
+    dead_cycle = 0
+    while True:
+        std_dev = np.std(Res)
+
+        _IMFs = []
+        for n in range(N_whitenoise):
+            white_noise = np.random.normal(0, std_dev * beta, N)
+            _S = Res + white_noise
+            _IMFs_, _ = emd(_S, T, max_imf=1)
+            if not _IMFs_:
+                continue
+            _IMFs.append(_IMFs_[0])
+
+        if not _IMFs:
+            dead_cycle += 1
+            continue
+
+        if dead_cycle >= dead_line:
+            raise RuntimeError("Trapped in a vicious cycle")
+        else:
+            dead_cycle = 0
+
+        IMF = np.mean(_IMFs, axis=0)
+
+        IMFs.append(IMF)
+
+        Res -= IMF
+        count += 1
+
+        if verbose:
+            if count % 10 == 0:
+                print(f"has get {count} IMFs...")
+                sleep(1)
+
+        if max_imf != -1:
+            if count >= max_imf or monotonic_increasing(Res) or monotonic_decreasing(Res):
+                return np.array(IMFs), np.array(Res)
+
+        else:
+            if monotonic_increasing(Res) or monotonic_decreasing(Res):
+                return np.array(IMFs), np.array(Res)

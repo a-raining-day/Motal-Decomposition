@@ -14,14 +14,17 @@ Description: (if None write None)
     Realize SSA, and optimize the use of numba and SSAfast(function).
 
 Modify:  (must)
-    2026.3.25 - I forgot.
+    2026.3.25 - Create.
     2026.3.29 - Optimize the SSA.decompose function, it's faster now. Please use SSA() which means SSA.decompose_fast().
 """
 
 import numpy as np
 from typing import Union
 
+
 class SSA:
+    """SSA: Singular Spectrum Analysis"""
+
     def __init__(self, window_size=None):
         """
         :param:
@@ -33,10 +36,9 @@ class SSA:
         self.U_ = None
         self.V_ = None
 
-
     def __call__(self, S, groups=None, faster=False):
+        """SSA: Singular Spectrum Analysis"""
         return self.decompose_fast(S, groups, faster)
-
 
     def hankel(self, S, L):
         N = len(S)
@@ -99,7 +101,6 @@ class SSA:
     def decompose(self, S: Union[list, np.ndarray],  groups=None) -> np.ndarray:
         """
         :param S: Signal (1-dim)
-        :param L:
         :param groups: group information, such as: [[0], [1,2], [3,4]] means which components will be merged. If None, return all
 
         :return: IMFs (2-dim)
@@ -157,8 +158,10 @@ class SSA:
 
         return self.components_
 
-    def decompose_fast(self, S: Union[list, np.ndarray], groups=None, faster: bool=False) -> np.ndarray:
+    def decompose_fast(self, S: Union[list, np.ndarray], groups=None, faster: bool=True) -> np.ndarray:
         """
+        SSA: Singular Spectrum Analysis
+
         :param S: Signal (1-dim)
         :param L:
         :param groups: group information, such as: [[0], [1,2], [3,4]] means which components will be merged. If None, return all
@@ -195,7 +198,7 @@ class SSA:
                 return temp
 
             if faster:
-                X_rec = np.add.reduce([f(i) for i in group])  # but, you should consider the memory with this code.
+                X_rec = U[:, group] @ (s[group, None] * Vt[group, :])  # but, you should consider the memory with this code.
 
             else:
                 for i in group:
@@ -208,21 +211,15 @@ class SSA:
         return np.array(RCs)
 
 
-# def give_fast_SSA() -> Callable:
-#     from numba import njit
-#
-#     @njit
-#     def SSAfast(series, L):
-#         N = len(series)
-#         K = N - L + 1
-#
-#         X = np.zeros((L, K))
-#         for i in range(K):
-#             X[:, i] = series[i:i + L]
-#
-#         # SVD decomposition
-#         U, s, VT = np.linalg.svd(X, full_matrices=False)
-#
-#         return U, s, VT
-#
-#     return SSAfast
+def ssa(S: Union[list, np.ndarray], window_size=None, groups=None, faster: bool=False) -> np.ndarray:
+    """
+    :param S: Signal (1-dim)
+    :param window_size:
+    :param groups: group information, such as: [[0], [1,2], [3,4]] means which components will be merged. If None, return all
+    :param faster:
+    :return: IMFs (2-dim)
+    """
+
+    Cls = SSA(window_size)
+
+    return Cls(S, groups, faster)

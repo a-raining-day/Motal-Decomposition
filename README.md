@@ -66,6 +66,7 @@ This lib's dependence are:
 - [numpy](https://github.com/numpy/numpy)
 - [scipy](https://github.com/scipy/scipy)
 - [vmdpy](https://github.com/vrcarva/vmdpy)
+- [psutil](https://github.com/giampaolo/psutil)
 
 *Other dependence please read "requirements.txt"*
 

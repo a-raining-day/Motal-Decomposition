@@ -1,5 +1,4 @@
 """
-
 Python version:  (must)
     3.10.11
 
@@ -18,142 +17,162 @@ Description: (if None write None)
 
 Modify:
     2026.3.25 - Optimize the use of scipy
+    2026.4.3  - Finish the Optimization of the LMD.
 """
 
 import numpy as np
 from .help_function import is_increasing
 from typing import Union, Tuple
 
-def lmd(S: Union[list, np.ndarray], max_pf=None, max_iter=37, eps=0.05) -> Tuple[np.ndarray, np.ndarray]:
+EPS_STABLE = 1e-12
+MIN_AMP = 1e-12
+MAX_AMP = 1e12
+CONVERGE_MEAN = 1e-3
+SMOOTH_WINDOW = 5
+
+def lmd(
+    S: Union[list, np.ndarray],
+    max_pf: int | None = None,
+    max_iter: int = 37,
+    eps: float = 0.05
+) -> Tuple[np.ndarray, np.ndarray]:
     """
+    LMD: Local mean decomposition
+
     :param S: Signal (1-dim)
-    :param max_pf: max num of pfs
-    :param max_iter: max iterations of each pf
-    :param eps: therhold
-    :return: PFs (2-dim), Res (1-dim)
+    :param max_pf: the max num of the PFs. Default log2(N)
+    :param max_iter: max iteration for each iter of decomposing the PFs. Default 37, according the paper.
+    :param eps: Envelope convergence threshold
+
+    Returns:
+        PFs: (n_pf, N), Res: (N,)
     """
-    import scipy.interpolate as ip
-    from scipy.signal import argrelextrema
+    from scipy.signal import argrelextrema, hilbert, savgol_filter
+
+    if S.ndim == 0:
+        raise ValueError("The dim of the S must be 1-dim, not 0")
+
+    elif S.ndim > 1:
+        if 1 in S.shape:
+            S = S.reshape(-1)
+
+        else:
+            raise ValueError(f"The dim of S must be 1-dim, not {S.ndim}")
 
     if not isinstance(S, np.ndarray):
-        S = np.array(S)
+        S = np.asarray(S, dtype=np.float64).ravel()
+    n_samples = S.size
 
-    T = len(S)
-    t = np.arange(0, T, 1)
+    if n_samples < 8:
+        raise ValueError("LMD requires signal length ≥ 8 (Smith 2005 standard)")
 
-    if max_pf is None:
-        max_pf = int(np.log2(T))
-
-    PFs = []
+    t = np.arange(n_samples, dtype=np.float64)
+    max_pf = int(np.log2(n_samples)) if max_pf is None else max_pf
     residue = S.copy()
+    PFs: list[np.ndarray] = []
 
-    for pf_idx in range(max_pf):
+    for _ in range(max_pf):
         h = residue.copy()
-        a_total = np.ones(T)
-        s = h.copy()
+        a_total = np.ones(n_samples, dtype=np.float64)
+        converged = False
 
-        for iter_num in range(max_iter):
-            max_idx = argrelextrema(h, np.greater)[0]
-            min_idx = argrelextrema(h, np.less)[0]
+        for __ in range(max_iter):
+            max_loc = argrelextrema(h, np.greater)[0]
+            min_loc = argrelextrema(h, np.less)[0]
+            ext_idx = np.unique(np.concatenate([max_loc, min_loc]))
 
-            extrema_idx = np.sort(np.concatenate([max_idx, min_idx]))
-
-            if len(extrema_idx) < 4:
+            if len(ext_idx) < 3:
                 break
 
-            m_values = []
-            a_values = []
-            t_mid = []
+            ext_idx, ext_vals = _mirror_extend_real(h, ext_idx, n_samples)
+            ext_idx = np.sort(ext_idx)
 
-            for i in range(len(extrema_idx) - 1):
-                t1, t2 = extrema_idx[i], extrema_idx[i + 1]
-                v1, v2 = h[t1], h[t2]
+            t_mid = (ext_idx[:-1] + ext_idx[1:]) / 2.0
+            m_vals = (ext_vals[:-1] + ext_vals[1:]) / 2.0
+            a_vals = np.abs(ext_vals[:-1] - ext_vals[1:]) / 2.0
 
-                mid_t = (t1 + t2) / 2.0
-                t_mid.append(mid_t)
+            m_t = _safe_interpolate(t_mid, m_vals, t)
+            a_t = _safe_interpolate(t_mid, a_vals, t)
 
-                m = (v1 + v2) / 2.0
-                m_values.append(m)
+            a_t = np.clip(a_t, MIN_AMP, MAX_AMP)
+            a_t = savgol_filter(a_t, SMOOTH_WINDOW, 2)
 
-                a = np.abs(v1 - v2) / 2.0
-                a_values.append(a)
-
-            t_mid = np.array(t_mid)
-            m_values = np.array(m_values)
-            a_values = np.array(a_values)
-
-            t_mid = np.clip(t_mid, 0, T - 1)
-            a_values = np.maximum(a_values, 1e-10)
-            a_values = np.minimum(a_values, 1e10)
-
-            try:
-                m_interp = ip.PchipInterpolator(t_mid, m_values, extrapolate=False)
-                a_interp = ip.PchipInterpolator(t_mid, a_values, extrapolate=False)
-
-                m_t = m_interp(t)
-                a_t = a_interp(t)
-
-                if np.any(np.isnan(m_t)) or np.any(np.isnan(a_t)):
-                    raise ValueError("NaN in interpolation")
-
-            except:
-                m_t = np.interp(t, t_mid, m_values, left=m_values[0], right=m_values[-1])
-                a_t = np.interp(t, t_mid, a_values, left=a_values[0], right=a_values[-1])
-
-            a_t = np.maximum(a_t, 1e-10)
-            a_t = np.minimum(a_t, 1e10)
-
-            h_new = h - m_t
-            s_new = h_new / a_t
-
-            a_total = a_total * a_t
-            a_total = np.clip(a_total, 1e-20, 1e20)
-
-            a_deviation = np.max(np.abs(a_t - 1.0))
-
-            if np.var(a_t) < 1e-6:
-                s = s_new
+            if _check_convergence(m_t, a_t, eps):
+                converged = True
                 break
 
-            if a_deviation < eps:
-                s = s_new
-                break
-
+            s_new = (h - m_t) / a_t
+            a_total = np.clip(a_total * a_t, MIN_AMP, MAX_AMP)
             h = s_new
-            s = s_new
 
-        current_pf = a_total * s
+        if not converged:
+            break
+
+        current_pf = np.clip(a_total * s_new, -MAX_AMP, MAX_AMP)
 
         if np.any(np.isnan(current_pf)) or np.any(np.isinf(current_pf)):
-            print(f"Warning: PF {pf_idx + 1} contains invalid values. Stopping decomposition.")
+            break
+
+        if np.sum(current_pf ** 2) < EPS_STABLE:
             break
 
         PFs.append(current_pf)
+        residue -= current_pf
 
-        residue = residue - current_pf
-
-        if is_increasing(residue) or is_increasing(-residue):
+        if (is_increasing(residue) or is_increasing(-residue) or
+                np.sum(residue ** 2) < EPS_STABLE or
+                len(argrelextrema(residue, np.greater)[0]) + len(argrelextrema(residue, np.less)[0]) <= 2):
             break
 
-        residue_energy = np.sum(residue ** 2)
-        if residue_energy < 1e-10:
-            break
-
-        max_idx = argrelextrema(residue, np.greater)[0]
-        min_idx = argrelextrema(residue, np.less)[0]
-        if len(max_idx) + len(min_idx) <= 2:
-            break
-
-        pf_energy = np.sum(current_pf ** 2)
-        if pf_energy < 1e-10:
-            PFs.pop()  # remove
-            break
-
+    del h, a_total, t
     return np.array(PFs, dtype=np.float64), residue
 
-def compute_envelope(signal):
-    from scipy.signal import hilbert
+def _mirror_extend_real(signal: np.ndarray, ext_idx: np.ndarray, n_samples: int) -> Tuple[np.ndarray, np.ndarray]:
+    ext = ext_idx.copy()
+    vals = signal[ext].copy()
+    last_idx = n_samples - 1
 
-    analytic_signal = hilbert(signal)
-    amplitude_envelope = np.abs(analytic_signal)
-    return amplitude_envelope
+    if ext[0] > 0:
+        mirror_pos = 0
+        mirror_val = 2 * signal[0] - vals[0]
+        ext = np.insert(ext, 0, mirror_pos)
+        vals = np.insert(vals, 0, mirror_val)
+
+    if ext[-1] < last_idx:
+        mirror_pos = last_idx
+        mirror_val = 2 * signal[-1] - vals[-1]
+        ext = np.append(ext, mirror_pos)
+        vals = np.append(vals, mirror_val)
+
+    return ext, vals
+
+def _safe_interpolate(x: np.ndarray, y: np.ndarray, x_new: np.ndarray) -> np.ndarray:
+    from scipy import interpolate
+
+    try:
+        interp = interpolate.CubicSpline(x, y, bc_type="natural")
+        res = interp(x_new)
+    except:
+        res = np.interp(x_new, x, y)
+
+    left_mask = x_new < x[0]
+    right_mask = x_new > x[-1]
+    if np.any(left_mask):
+        slope = (y[1] - y[0]) / (x[1] - x[0])
+        res[left_mask] = y[0] + slope * (x_new[left_mask] - x[0])
+    if np.any(right_mask):
+        slope = (y[-1] - y[-2]) / (x[-1] - x[-2])
+        res[right_mask] = y[-1] + slope * (x_new[right_mask] - x[-1])
+
+    return res
+
+def _check_convergence(m_t: np.ndarray, a_t: np.ndarray, eps: float) -> bool:
+    mean_ok = np.max(np.abs(m_t)) < CONVERGE_MEAN
+    envelope_ok = np.max(np.abs(a_t - 1.0)) < eps
+    return mean_ok and envelope_ok
+
+def compute_envelope(signal: Union[list, np.ndarray]) -> np.ndarray:
+    from scipy.linalg import hilbert
+
+    signal = np.asarray(signal, dtype=np.float64).ravel()
+    return np.abs(hilbert(signal))

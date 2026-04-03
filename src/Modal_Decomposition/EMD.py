@@ -3,17 +3,17 @@ Python version:  (must)
     3.10.11
 
 Lib and Version:  (if None write None)
-    EMD-signal - 1.9.0
+    EMD-S - 1.9.0
 	numpy - 2.2.6
 
 Only accessed by:  (must)
     Only __init__.py
 
-Modify:  (must)
-    2026.3.25
-
 Description: (if None write None)
     Realize the EMD
+
+Modify:  (must)
+    2026.3.25 - Create.
 """
 
 from PyEMD import EMD
@@ -21,11 +21,12 @@ import numpy as np
 from .COLOR.colorful_print import printc
 from typing import Tuple, Union
 
-EMD_cls = EMD
 
 def emd(S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, spline_kind: str = "cubic", nbsym: int = 2, max_imf=-1, fs=None)\
         -> Tuple[np.ndarray, np.ndarray]:
     """
+    EMD: Empirical Mode Decomposition
+
     :param S: Signal (1-dim)
     :param T: Time axis (1-dim)
     :param spline_kind: the kind of spline. default cubic.
@@ -37,15 +38,25 @@ def emd(S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, spline_kind
     if not isinstance(S, np.ndarray):
         S = np.array(S)
 
+    if S.ndim == 0:
+        raise ValueError("The dim of the S must be 1-dim, not 0")
+
+    elif S.ndim > 1:
+        if 1 in S.shape:
+            S = S.reshape(-1)
+
+        else:
+            raise ValueError(f"The dim of S must be 1-dim, not {S.ndim}")
+
     N = len(S)
 
-    if T is None:
-        if fs is not None:
-            dt = 1.0 / fs  # smaple for time axis
-            T = np.arange(N) * dt
-        else:
-            T = np.arange(N)  # default fs = 1
-            printc(f"Warn: T is None，default T = [0, 1, 2, ..., {N - 1}]", color="red")
+    if T is None:  # if T is None, default generate uniform T-axis.
+        T = np.arange(N)  # default fs = 1
+        print(f"Warn: T is None，default T = [0, 1, 2, ..., {N - 1}]")
+
+    else:
+        if not isinstance(T, np.ndarray):
+            T = np.array(T)
 
     EMD_cls = EMD(spline_kind, nbsym)
 

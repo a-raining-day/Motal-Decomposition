@@ -19,8 +19,11 @@ Description: (if None write None)
 import numpy as np
 from typing import Union, Tuple
 
+
 def memd(S: Union[list, np.ndarray], d=None, k=None, max_imf=None, sd_thresh=0.2, max_iter=10) -> Tuple[np.ndarray, np.ndarray]:
     """
+    MEMD: Multimodal Experience Modeling Decomposition
+
     :param S: Signal (2-dim), (d, N) | d -> channels,N -> time points
     :param d: channels or dimensions
     :param k: number of directional vector,default: d * 128
@@ -152,9 +155,9 @@ def generate_primes(n):
 
 def compute_local_mean(signal, vectors, T):
     """
-    signal: now signal (d, N)
+    S: now S (d, N)
     vectors: directional vector (d, k)
-    projections: projecttion of origin signal (N, k)
+    projections: projecttion of origin S (N, k)
     T
     """
     from scipy.signal import find_peaks
