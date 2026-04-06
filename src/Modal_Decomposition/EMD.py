@@ -22,7 +22,7 @@ from .COLOR.colorful_print import printc
 from typing import Tuple, Union
 
 
-def emd(S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, spline_kind: str = "cubic", nbsym: int = 2, max_imf=-1, fs=None)\
+def emd(S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, spline_kind: str = "cubic", nbsym: int = 2, max_imf=-1, verbose: bool=False)\
         -> Tuple[np.ndarray, np.ndarray]:
     """
     EMD: Empirical Mode Decomposition
@@ -32,7 +32,7 @@ def emd(S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, spline_kind
     :param spline_kind: the kind of spline. default cubic.
     :param nbsym:
     :param max_imf: the max num of IMFs
-    :param fs: the f of T. default 1.
+    :param verbose: True will print info, else no.
     :return: IMFs (2-dim), Res (1-dim)
     """
     if not isinstance(S, np.ndarray):
@@ -52,7 +52,8 @@ def emd(S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, spline_kind
 
     if T is None:  # if T is None, default generate uniform T-axis.
         T = np.arange(N)  # default fs = 1
-        print(f"Warn: T is None，default T = [0, 1, 2, ..., {N - 1}]")
+        if verbose:
+            print(f"Warn: T is None，default T = [0, 1, 2, ..., {N - 1}]")
 
     else:
         if not isinstance(T, np.ndarray):
@@ -62,4 +63,13 @@ def emd(S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, spline_kind
 
     IMFs = EMD_cls.emd(S, T, max_imf=max_imf)
 
-    return IMFs[:-1, :], IMFs[-1, :]
+    Res = IMFs[-1, :]
+    IMFs = IMFs[:-1, :]
+
+    if IMFs.ndim == 1:
+        IMFs = IMFs.reshape(1, -1)
+
+    elif IMFs.ndim == 0:
+        IMFs = np.zeros((1, Res.shape[1]))
+
+    return IMFs, Res

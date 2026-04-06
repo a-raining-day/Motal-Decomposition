@@ -14,6 +14,7 @@ Description: (if None write None)
 Modify:  (must)
     2026.3.25 - Create
     2026.3.30 - Desperate the CEEMDAN and the CEEFD, and rename the Cyclic_CEEFD as CEEFD, del the origin CEEFD.
+    2026.4.7  - Fix the problem when the freq_bins include 0 will make the idx out of list. And change _extract_imf to staticmethod.
 """
 
 import numpy as np
@@ -44,13 +45,15 @@ class ceefd:
             envelope = np.maximum(envelope, mag_spectrum)
         return envelope
 
-    def _extract_imf(self, signal, freq_bins):
+    @staticmethod
+    def _extract_imf(signal, freq_bins):
         N = len(signal)
         fft_signal = np.fft.fft(signal)
 
         mask = np.zeros(N, dtype=bool)
         mask[freq_bins] = True
-        mask[N - np.array(freq_bins)] = True
+        # mask[N - np.array(freq_bins)] = True -> \  # 2026.4.7
+        mask[(N - np.array(freq_bins)) % N] = True
 
         imf_fft = fft_signal * mask
         imf = np.fft.ifft(imf_fft).real

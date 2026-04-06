@@ -40,12 +40,21 @@ Modify:
     2026.3.29 - Optimize the SSA.decompose function, time changed from 40min averagely to 2s averagely.
     2026.3.30 - Rebuilding All.
     2026.3.30 - Optimize the function of judging monotonicity.
+    2026.4.3  - Finish the Optimization of the modal decomposition method. Except the MEMD method.
+    2026.4.4  - Add the parameter to describe lib.
+    2026.4.6  - Change the position of the entrance of importing 'threading'. Try to reduce the cost of the import.
 """
 
-import threading
-from importlib import import_module
 
-from .help_function import is_increasing
+__version__ = "0.1.1"
+__author__ = "a-raining-day(Mao)"
+__email__ = "None, Only QQ email."
+__license__ = "Apache 2.0"
+__url__ = "https://github.com/a-raining-day/Modal-Decomposition"
+__description__ = "A comprehensive modal decomposition library"
+
+
+from importlib import import_module
 
 from .CEEFD import ceefd
 from .CEEMD import ceemd
@@ -67,9 +76,22 @@ from .VMD import vmd
 import warnings
 warnings.warn("The MEMD is rebuilding...")
 
-__all__ = ["Function", "Class"]
+
+__all__ = \
+    [
+        "Function", "Class",
+        "__version__",
+        "__author__",
+        "__email__",
+        "__license__",
+        "__url__",
+        "__description__"
+    ]
+
 
 class Class:
+    import threading
+
     __cache = {}
 
     CEEFD = ceefd
@@ -120,6 +142,7 @@ class Function:
     # function | default function for modal decomposition
     # the IMFs (2-dim) means: (K, len(Signal)) (K is the num of IMFs)
     # CEEFD = ceefd_real_cls.ceefd
+
     CEEFD = Class.CEEFD(fs=1.0, min_peak_distance=10, envelop_iter=3)
     CEEMD = ceemd
     CEEMDAN = ceemdan
@@ -136,6 +159,25 @@ class Function:
     SVMD = svmd
     VMD = vmd
 
+    # __cache = \
+    # {
+    #     "CEEFD": CEEFD,
+    #     "CEEMD": CEEMD,
+    #     "CEEMDAN": CEEMDAN,
+    #     "EEMD": EEMD,
+    #     "EFD": EFD,
+    #     "EMD": EMD,
+    #     "EWT": EWT,
+    #     "FMD": FMD,
+    #     "ICEEMDAN": ICEEMDAN,
+    #     "LMD": LMD,
+    #     "MEMD": MEMD,
+    #     "RPSEMD": RPSEMD,
+    #     "SSA": SSA,
+    #     "SVMD": SVMD,
+    #     "VMD": VMD
+    # }
+
 
 if __name__ == '__main__':
-    ...
+    Function.AAA
