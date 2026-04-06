@@ -17,6 +17,7 @@ Description: (if None write None)
 Modify:  (must)
     2026.3.25 - Create
     2026.4.2  - Finish the Optimization of the EFD. Del the origin efd function.
+    2026.4.7  - Correct the error of the use of the np.concentrate and the construction of the wn.
 """
 
 import numpy as np
@@ -24,13 +25,14 @@ from .COLOR import printc
 from typing import Union, Tuple
 
 
-def efd(S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, max_IMFs: int=-1) -> Tuple[np.ndarray, np.ndarray]:
+def efd(S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, max_IMFs: int=-1, verbose: bool=False) -> Tuple[np.ndarray, np.ndarray]:
     """
     EFD: Empirical Fourier Decomposition
 
     :param S: Signal (1-dim)
     :param T: Time axis (1-dim)
     :param max_IMFs: the num of the IMFs. -1 means return all IMFs
+    :param verbose: if print the info?
     :return: IMFs (n_IMFs, N), Res: (N,)
     """
 
@@ -60,7 +62,8 @@ def efd(S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, max_IMFs: i
 
     if T is None:  # if T is None, default generate uniform T-axis.
         T = np.arange(N)  # default fs = 1
-        print(f"Warn: T is None，default T = [0, 1, 2, ..., {N - 1}]")
+        if verbose:
+            print(f"Warn: T is None，default T = [0, 1, 2, ..., {N - 1}]")
 
     else:
         if not isinstance(T, np.ndarray):
@@ -86,14 +89,13 @@ def efd(S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, max_IMFs: i
     uniform_freq = np.linspace(0, np.pi, N // 2)
     freq_N = len(uniform_freq)
 
-    local_maximum_points = argrelmax(edge_magnitude)
+    local_maximum_points_tuple = argrelmax(edge_magnitude)
+    local_maximum_points = local_maximum_points_tuple[0]
     local_maximum = edge_magnitude[local_maximum_points]
 
     if max_IMFs != -1:
         local_maximum_zip = [(point, value) for point, value in zip(local_maximum_points, local_maximum)]
-
         local_maximum_zip = sorted(local_maximum_zip, reverse=True, key=lambda x: x[1])
-
         local_maximum_points = list(map(lambda x: x[0], local_maximum_zip[:max_IMFs]))
 
     local_maximum_points = np.concatenate(([0], local_maximum_points, [freq_N - 1]))
@@ -112,7 +114,7 @@ def efd(S: Union[list, np.ndarray], T: Union[list, np.ndarray]=None, max_IMFs: i
         else:
             # wn.append(np.argmin(edge_magnitude[current_point:next_point + 1]))
             wn.append(current_point + np.argmin(edge_magnitude[current_point:next_point + 1]))
-    wn = np.concatenate(([0], wn, freq_N - 1))
+    wn = np.concatenate(([0], wn, [freq_N - 1]))
 
     filters_arr = []
     for edge in range(1, len(wn)):
